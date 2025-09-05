@@ -1,20 +1,25 @@
 import { Tabs } from 'expo-router';
 import { Activity, History, Settings } from 'lucide-react-native';
+import { neumorphicColors } from '../../styles/neumorphic';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2563EB',
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarActiveTintColor: neumorphicColors.textPrimary,
+        tabBarInactiveTintColor: neumorphicColors.textTertiary,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
+          backgroundColor: neumorphicColors.background,
+          borderTopWidth: 0,
           paddingTop: 8,
           paddingBottom: 8,
           height: 80,
+          shadowColor: neumorphicColors.shadowDark,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 4,
         },
       }}>
       <Tabs.Screen

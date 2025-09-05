@@ -11,6 +11,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Thermometer, Droplets, Activity, Trash2, RefreshCw } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { 
+  neumorphicColors, 
+  createNeumorphicStyle, 
+  createNeumorphicButtonStyle, 
+  neumorphicTextStyles,
+  neumorphicStyles 
+} from '../../styles/neumorphic';
 
 interface DataReading {
   id: string;
@@ -24,6 +31,10 @@ interface DataReading {
 export default function HistoryScreen() {
   const [historyData, setHistoryData] = useState<DataReading[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // States for neumorphic button press effects
+  const [isRefreshButtonPressed, setIsRefreshButtonPressed] = useState(false);
+  const [isClearButtonPressed, setIsClearButtonPressed] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -81,17 +92,17 @@ export default function HistoryScreen() {
       
       <View style={styles.itemData}>
         <View style={styles.dataItem}>
-          <Thermometer size={16} color="#DC2626" />
+          <Thermometer size={16} color={neumorphicColors.textSecondary} />
           <Text style={styles.dataValue}>{item.temperature.toFixed(1)}°C</Text>
         </View>
         
         <View style={styles.dataItem}>
-          <Droplets size={16} color="#2563EB" />
+          <Droplets size={16} color={neumorphicColors.textSecondary} />
           <Text style={styles.dataValue}>{item.humidity.toFixed(1)}%</Text>
         </View>
         
         <View style={styles.dataItem}>
-          <Activity size={16} color={item.movement_alert ? "#DC2626" : "#6B7280"} />
+          <Activity size={16} color={item.movement_alert ? neumorphicColors.alert : neumorphicColors.textTertiary} />
           <Text style={[
             styles.dataValue,
             item.movement_alert ? styles.alertActive : styles.alertInactive
@@ -105,7 +116,7 @@ export default function HistoryScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Activity size={48} color="#9CA3AF" />
+      <Activity size={48} color={neumorphicColors.textTertiary} />
       <Text style={styles.emptyTitle}>Sin Datos</Text>
       <Text style={styles.emptySubtitle}>
         No hay lecturas guardadas aún. Conéctate a tu ESP32 para comenzar a recopilar datos.
@@ -123,19 +134,35 @@ export default function HistoryScreen() {
       {historyData.length > 0 && (
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.refreshButton}
+            style={createNeumorphicButtonStyle({ 
+              variant: 'secondary', 
+              size: 'small',
+              pressed: isRefreshButtonPressed 
+            })}
             onPress={onRefresh}
+            onPressIn={() => setIsRefreshButtonPressed(true)}
+            onPressOut={() => setIsRefreshButtonPressed(false)}
           >
-            <RefreshCw size={16} color="#2563EB" />
-            <Text style={styles.refreshText}>Actualizar</Text>
+            <View style={styles.buttonContent}>
+              <RefreshCw size={16} color={neumorphicColors.textPrimary} />
+              <Text style={styles.buttonText}>Actualizar</Text>
+            </View>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.clearButton}
+            style={createNeumorphicButtonStyle({ 
+              variant: 'alert', 
+              size: 'small',
+              pressed: isClearButtonPressed 
+            })}
             onPress={clearHistory}
+            onPressIn={() => setIsClearButtonPressed(true)}
+            onPressOut={() => setIsClearButtonPressed(false)}
           >
-            <Trash2 size={16} color="#DC2626" />
-            <Text style={styles.clearText}>Limpiar Historial</Text>
+            <View style={styles.buttonContent}>
+              <Trash2 size={16} color={neumorphicColors.textPrimary} />
+              <Text style={styles.buttonText}>Limpiar Historial</Text>
+            </View>
           </TouchableOpacity>
         </View>
       )}
@@ -148,7 +175,7 @@ export default function HistoryScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#2563EB"
+            tintColor={neumorphicColors.textSecondary}
           />
         }
         ListEmptyComponent={renderEmptyState}
@@ -160,25 +187,17 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
+  container: neumorphicStyles.container,
   header: {
     paddingTop: 60,
     paddingHorizontal: 16,
     paddingBottom: 20,
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
+  title: neumorphicTextStyles.title,
   subtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: neumorphicColors.textSecondary,
   },
   actions: {
     flexDirection: 'row',
@@ -186,37 +205,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
   },
-  refreshButton: {
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
   },
-  refreshText: {
-    color: '#2563EB',
+  buttonText: {
     fontSize: 14,
     fontWeight: '500',
-  },
-  clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#FEF2F2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  clearText: {
-    color: '#DC2626',
-    fontSize: 14,
-    fontWeight: '500',
+    color: neumorphicColors.textPrimary,
   },
   listContainer: {
     padding: 16,
@@ -234,26 +231,19 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: neumorphicColors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   historyItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    ...createNeumorphicStyle({ size: 'medium' }),
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -261,16 +251,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: neumorphicColors.shadowDark,
   },
   itemDate: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
   },
   itemTime: {
     fontSize: 14,
-    color: '#6B7280',
+    color: neumorphicColors.textSecondary,
   },
   itemData: {
     flexDirection: 'row',
@@ -283,12 +273,12 @@ const styles = StyleSheet.create({
   dataValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1E293B',
+    color: neumorphicColors.textPrimary,
   },
   alertActive: {
-    color: '#DC2626',
+    color: neumorphicColors.alert,
   },
   alertInactive: {
-    color: '#6B7280',
+    color: neumorphicColors.textTertiary,
   },
 });

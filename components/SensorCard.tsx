@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { neumorphicColors, createNeumorphicStyle, neumorphicTextStyles } from '../styles/neumorphic';
 
 interface SensorCardProps {
   title: string;
@@ -16,7 +17,7 @@ export default function SensorCard({ title, value, unit, icon, color }: SensorCa
         {icon}
         <Text style={styles.title}>{title}</Text>
       </View>
-      <Text style={[styles.value, { color }]}>{value}</Text>
+      <Text style={[styles.value, { color: neumorphicColors.textPrimary }]}>{value}</Text>
       <Text style={styles.unit}>{unit}</Text>
     </View>
   );
@@ -24,16 +25,10 @@ export default function SensorCard({ title, value, unit, icon, color }: SensorCa
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    ...createNeumorphicStyle({ size: 'medium', borderRadius: 12 }),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
     minWidth: 120,
+    marginBottom: 0,
   },
   header: {
     flexDirection: 'row',
@@ -44,16 +39,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
   },
   value: {
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 2,
+    color: neumorphicColors.textPrimary,
   },
   unit: {
     fontSize: 12,
-    color: '#6B7280',
+    color: neumorphicColors.textTertiary,
     fontWeight: '500',
   },
 });

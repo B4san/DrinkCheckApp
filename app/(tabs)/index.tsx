@@ -12,6 +12,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Thermometer, Droplets, Activity, Wifi, WifiOff, Send, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle } from 'lucide-react-native';
+import { 
+  neumorphicColors, 
+  createNeumorphicStyle, 
+  createNeumorphicButtonStyle, 
+  neumorphicTextStyles,
+  neumorphicStyles 
+} from '../../styles/neumorphic';
 
 // Configuración de notificaciones
 Notifications.setNotificationHandler({
@@ -52,6 +59,10 @@ export default function MonitorScreen() {
   const [isSendingData, setIsSendingData] = useState(false);
   const [webhookResponse, setWebhookResponse] = useState('');
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  
+  // States for neumorphic button press effects
+  const [isConnectionButtonPressed, setIsConnectionButtonPressed] = useState(false);
+  const [isSendButtonPressed, setIsSendButtonPressed] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -249,6 +260,7 @@ export default function MonitorScreen() {
             value={ipAddress}
             onChangeText={setIpAddress}
             placeholder="192.168.1.108"
+            placeholderTextColor={neumorphicColors.textTertiary}
             editable={!isConnected}
             keyboardType="numeric"
           />
@@ -256,18 +268,30 @@ export default function MonitorScreen() {
 
         <TouchableOpacity
           style={[
-            styles.connectionButton,
-            isConnected ? styles.connectedButton : styles.disconnectedButton
+            isConnected 
+              ? createNeumorphicButtonStyle({ 
+                  variant: 'success', 
+                  pressed: isConnectionButtonPressed 
+                })
+              : createNeumorphicButtonStyle({ 
+                  variant: 'primary', 
+                  pressed: isConnectionButtonPressed 
+                })
           ]}
           onPress={toggleConnection}
+          onPressIn={() => setIsConnectionButtonPressed(true)}
+          onPressOut={() => setIsConnectionButtonPressed(false)}
           disabled={isConnecting}
         >
           <View style={styles.buttonContent}>
             {isConnecting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={neumorphicColors.textPrimary} />
             ) : (
               <>
-                {isConnected ? <Wifi size={20} color="#FFFFFF" /> : <WifiOff size={20} color="#FFFFFF" />}
+                {isConnected ? 
+                  <Wifi size={20} color={neumorphicColors.textPrimary} /> : 
+                  <WifiOff size={20} color={neumorphicColors.textPrimary} />
+                }
                 <Text style={styles.buttonText}>
                   {isConnected ? 'Desconectar' : 'Conectar'}
                 </Text>
@@ -278,14 +302,14 @@ export default function MonitorScreen() {
 
         {connectionError ? (
           <View style={styles.errorContainer}>
-            <AlertTriangle size={16} color="#DC2626" />
+            <AlertTriangle size={16} color={neumorphicColors.textPrimary} />
             <Text style={styles.errorText}>{connectionError}</Text>
           </View>
         ) : null}
 
         {isConnected && lastUpdate && (
           <View style={styles.statusContainer}>
-            <CheckCircle size={16} color="#059669" />
+            <CheckCircle size={16} color={neumorphicColors.textPrimary} />
             <Text style={styles.statusText}>
               Última actualización: {lastUpdate.toLocaleTimeString()}
             </Text>
@@ -301,7 +325,7 @@ export default function MonitorScreen() {
           {/* Temperatura */}
           <View style={styles.sensorCard}>
             <View style={styles.sensorHeader}>
-              <Thermometer size={24} color="#DC2626" />
+              <Thermometer size={24} color={neumorphicColors.textSecondary} />
               <Text style={styles.sensorLabel}>Temperatura</Text>
             </View>
             <Text style={styles.sensorValue}>{sensorData.temperature.toFixed(1)} °C</Text>
@@ -311,7 +335,7 @@ export default function MonitorScreen() {
           {/* Humedad */}
           <View style={styles.sensorCard}>
             <View style={styles.sensorHeader}>
-              <Droplets size={24} color="#2563EB" />
+              <Droplets size={24} color={neumorphicColors.textSecondary} />
               <Text style={styles.sensorLabel}>Humedad</Text>
             </View>
             <Text style={styles.sensorValue}>{sensorData.humidity.toFixed(1)} %</Text>
@@ -325,7 +349,7 @@ export default function MonitorScreen() {
           sensorData.movement_alert ? styles.alertActive : styles.alertInactive
         ]}>
           <View style={styles.alertHeader}>
-            <Activity size={24} color={sensorData.movement_alert ? "#FFFFFF" : "#6B7280"} />
+            <Activity size={24} color={neumorphicColors.textPrimary} />
             <Text style={[
               styles.alertLabel,
               sensorData.movement_alert ? styles.alertLabelActive : styles.alertLabelInactive
@@ -347,16 +371,22 @@ export default function MonitorScreen() {
         <Text style={styles.cardTitle}>Envío de Datos</Text>
         
         <TouchableOpacity
-          style={styles.sendButton}
+          style={createNeumorphicButtonStyle({ 
+            variant: 'primary', 
+            size: 'large',
+            pressed: isSendButtonPressed 
+          })}
           onPress={sendDataToCloud}
+          onPressIn={() => setIsSendButtonPressed(true)}
+          onPressOut={() => setIsSendButtonPressed(false)}
           disabled={isSendingData}
         >
           <View style={styles.buttonContent}>
             {isSendingData ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={neumorphicColors.textPrimary} />
             ) : (
               <>
-                <Send size={20} color="#FFFFFF" />
+                <Send size={20} color={neumorphicColors.textPrimary} />
                 <Text style={styles.buttonText}>Enviar Datos a la Nube</Text>
               </>
             )}
@@ -375,72 +405,38 @@ export default function MonitorScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  contentContainer: {
-    padding: 16,
-    paddingTop: 60,
-  },
+  container: neumorphicStyles.container,
+  contentContainer: neumorphicStyles.contentContainer,
   header: {
     marginBottom: 24,
     alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748B',
-  },
+  title: neumorphicTextStyles.title,
+  subtitle: neumorphicTextStyles.subtitle,
   connectionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    ...createNeumorphicStyle({ size: 'large' }),
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 16,
-  },
+  cardTitle: neumorphicTextStyles.cardTitle,
   inputContainer: {
     marginBottom: 16,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 8,
-  },
+  label: neumorphicTextStyles.label,
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#FFFFFF',
+    ...neumorphicStyles.input,
+    // Inset shadow effect for input
+    shadowColor: neumorphicColors.shadowDark,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 1,
   },
   connectionButton: {
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-  },
-  connectedButton: {
-    backgroundColor: '#059669',
-  },
-  disconnectedButton: {
-    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonContent: {
     flexDirection: 'row',
@@ -448,50 +444,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  buttonText: neumorphicTextStyles.buttonText,
   errorContainer: {
+    ...createNeumorphicStyle({ size: 'small', borderRadius: 8 }),
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#FEF2F2',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#FECACA',
+    backgroundColor: neumorphicColors.alert,
   },
   errorText: {
-    color: '#DC2626',
+    color: neumorphicColors.textPrimary,
     fontSize: 14,
     flex: 1,
   },
   statusContainer: {
+    ...createNeumorphicStyle({ size: 'small', borderRadius: 8 }),
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#F0FDF4',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
+    backgroundColor: neumorphicColors.success,
   },
   statusText: {
-    color: '#059669',
+    color: neumorphicColors.textPrimary,
     fontSize: 14,
   },
   sensorsContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    ...createNeumorphicStyle({ size: 'large' }),
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   sensorsGrid: {
     flexDirection: 'row',
@@ -500,11 +479,8 @@ const styles = StyleSheet.create({
   },
   sensorCard: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    ...createNeumorphicStyle({ size: 'medium', borderRadius: 8 }),
+    backgroundColor: neumorphicColors.surface,
   },
   sensorHeader: {
     flexDirection: 'row',
@@ -515,30 +491,33 @@ const styles = StyleSheet.create({
   sensorLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
   },
   sensorValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1E293B',
+    color: neumorphicColors.textPrimary,
     marginBottom: 4,
   },
   sensorTime: {
     fontSize: 12,
-    color: '#6B7280',
+    color: neumorphicColors.textTertiary,
   },
   alertCard: {
     borderRadius: 8,
     padding: 16,
-    borderWidth: 2,
+    ...createNeumorphicStyle({ size: 'medium', borderRadius: 8 }),
   },
   alertActive: {
-    backgroundColor: '#DC2626',
-    borderColor: '#B91C1C',
+    backgroundColor: neumorphicColors.alert,
+    shadowColor: neumorphicColors.shadowDark,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
   },
   alertInactive: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
+    backgroundColor: neumorphicColors.surface,
   },
   alertHeader: {
     flexDirection: 'row',
@@ -551,53 +530,43 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   alertLabelActive: {
-    color: '#FFFFFF',
+    color: neumorphicColors.textPrimary,
   },
   alertLabelInactive: {
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
   },
   alertStatus: {
     fontSize: 18,
     fontWeight: '700',
   },
   alertStatusActive: {
-    color: '#FFFFFF',
+    color: neumorphicColors.textPrimary,
   },
   alertStatusInactive: {
-    color: '#6B7280',
+    color: neumorphicColors.textSecondary,
   },
   cloudCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sendButton: {
-    backgroundColor: '#EA580C',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    ...createNeumorphicStyle({ size: 'large' }),
   },
   responseContainer: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    ...createNeumorphicStyle({ size: 'small', borderRadius: 8 }),
+    backgroundColor: neumorphicColors.surface,
+    // Inset shadow for response container
+    shadowColor: neumorphicColors.shadowDark,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 1,
   },
   responseLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: neumorphicColors.textPrimary,
     marginBottom: 8,
   },
   responseText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: neumorphicColors.textTertiary,
     fontFamily: 'monospace',
   },
 });
