@@ -1,35 +1,67 @@
 # dependencies
 node_modules/
 
-# expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# React Native
+# Built application files
+*.apk
+*.ipa
+*.app
 
-# native
-*.orig.*
+# Keystore files
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 
-# metro
+# Bundle artifacts
+*.jsbundle
+
+# Metro
 .metro-health-check*
 
-# debug
+# CocoaPods
+ios/Pods/
+ios/Podfile.lock
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
+
+# Android/IntelliJ
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+
+# Debug files
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macos
+# macOS
 .DS_Store
 *.pem
 
-# local env files
+# Environment files
 .env*.local
 .env
 
-# typescript
+# TypeScript
 *.tsbuildinfo
+
+# Temporary files
+tmp/
