@@ -1,13 +1,7 @@
 # dependencies
 node_modules/
 
-# expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-
-# native
+# React Native
 *.orig.*
 *.jks
 *.p8
@@ -22,6 +16,35 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+/ios/Pods/
+
+# Xcode
+/ios/build/
+/ios/DerivedData/
+*.xcworkspace
+!default.xcworkspace
+
+# Android
+/android/app/build/
+/android/build/
+/android/.gradle/
+
+# Buck
+.buckd/
+.buckconfig
+*.keystore
+!debug.keystore
+
+# fastlane
+/ios/fastlane/report.xml
+/ios/fastlane/Preview.html
+/ios/fastlane/screenshots
+/ios/fastlane/test_output
 
 # macos
 .DS_Store
