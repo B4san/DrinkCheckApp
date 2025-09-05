@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,13 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Thermometer, Droplets, Activity, Trash2, RefreshCw } from 'lucide-react-native';
+import {
+  Thermometer,
+  Droplets,
+  Activity,
+  Trash2,
+  RefreshCw,
+} from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 interface DataReading {
@@ -66,9 +72,9 @@ export default function HistoryScreen() {
             } catch (error) {
               Alert.alert('Error', 'No se pudo eliminar el historial.');
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
@@ -78,24 +84,29 @@ export default function HistoryScreen() {
         <Text style={styles.itemDate}>{item.date}</Text>
         <Text style={styles.itemTime}>{item.timestamp}</Text>
       </View>
-      
+
       <View style={styles.itemData}>
         <View style={styles.dataItem}>
           <Thermometer size={16} color="#DC2626" />
           <Text style={styles.dataValue}>{item.temperature.toFixed(1)}°C</Text>
         </View>
-        
+
         <View style={styles.dataItem}>
           <Droplets size={16} color="#2563EB" />
           <Text style={styles.dataValue}>{item.humidity.toFixed(1)}%</Text>
         </View>
-        
+
         <View style={styles.dataItem}>
-          <Activity size={16} color={item.movement_alert ? "#DC2626" : "#6B7280"} />
-          <Text style={[
-            styles.dataValue,
-            item.movement_alert ? styles.alertActive : styles.alertInactive
-          ]}>
+          <Activity
+            size={16}
+            color={item.movement_alert ? '#DC2626' : '#6B7280'}
+          />
+          <Text
+            style={[
+              styles.dataValue,
+              item.movement_alert ? styles.alertActive : styles.alertInactive,
+            ]}
+          >
             {item.movement_alert ? 'Movimiento' : 'Estable'}
           </Text>
         </View>
@@ -108,7 +119,8 @@ export default function HistoryScreen() {
       <Activity size={48} color="#9CA3AF" />
       <Text style={styles.emptyTitle}>Sin Datos</Text>
       <Text style={styles.emptySubtitle}>
-        No hay lecturas guardadas aún. Conéctate a tu ESP32 para comenzar a recopilar datos.
+        No hay lecturas guardadas aún. Conéctate a tu ESP32 para comenzar a
+        recopilar datos.
       </Text>
     </View>
   );
@@ -117,23 +129,19 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Historial de Sensores</Text>
-        <Text style={styles.subtitle}>Últimas {historyData.length} lecturas guardadas</Text>
+        <Text style={styles.subtitle}>
+          Últimas {historyData.length} lecturas guardadas
+        </Text>
       </View>
 
       {historyData.length > 0 && (
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.refreshButton}
-            onPress={onRefresh}
-          >
+          <TouchableOpacity style={styles.refreshButton} onPress={onRefresh}>
             <RefreshCw size={16} color="#2563EB" />
             <Text style={styles.refreshText}>Actualizar</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={clearHistory}
-          >
+
+          <TouchableOpacity style={styles.clearButton} onPress={clearHistory}>
             <Trash2 size={16} color="#DC2626" />
             <Text style={styles.clearText}>Limpiar Historial</Text>
           </TouchableOpacity>
@@ -152,7 +160,11 @@ export default function HistoryScreen() {
           />
         }
         ListEmptyComponent={renderEmptyState}
-        contentContainerStyle={historyData.length === 0 ? styles.emptyContainer : styles.listContainer}
+        contentContainerStyle={
+          historyData.length === 0
+            ? styles.emptyContainer
+            : styles.listContainer
+        }
         showsVerticalScrollIndicator={false}
       />
     </View>

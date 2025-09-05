@@ -27,7 +27,8 @@ export default function App() {
             paddingBottom: 8,
             height: 80,
           },
-        }}>
+        }}
+      >
         <Tab.Screen
           name="Monitor"
           component={MonitorScreen}

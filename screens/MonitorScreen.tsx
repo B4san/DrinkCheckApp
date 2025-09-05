@@ -13,7 +13,16 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
-import { Thermometer, Droplets, Activity, Wifi, WifiOff, Send, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle } from 'lucide-react-native';
+import {
+  Thermometer,
+  Droplets,
+  Activity,
+  Wifi,
+  WifiOff,
+  Send,
+  TriangleAlert as AlertTriangle,
+  CircleCheck as CheckCircle,
+} from 'lucide-react-native';
 
 interface SensorData {
   temperature: number;
@@ -87,14 +96,18 @@ export default function MonitorScreen() {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
           {
             title: 'Notification Permission',
-            message: 'This app needs access to show notifications for movement alerts.',
+            message:
+              'This app needs access to show notifications for movement alerts.',
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
           }
         );
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permission denied', 'Notification permissions are required for movement alerts.');
+          Alert.alert(
+            'Permission denied',
+            'Notification permissions are required for movement alerts.',
+          );
         }
       } catch (err) {
         console.warn(err);
@@ -103,7 +116,8 @@ export default function MonitorScreen() {
   };
 
   const validateIP = (ip: string): boolean => {
-    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipRegex =
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipRegex.test(ip);
   };
 
@@ -115,15 +129,15 @@ export default function MonitorScreen() {
       const response = await fetch(`http://${ipAddress}/data`, {
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       const newSensorData: SensorData = {
         temperature: parseFloat(data.temperature) || 0,
         humidity: parseFloat(data.humidity) || 0,
@@ -134,15 +148,15 @@ export default function MonitorScreen() {
       setSensorData(newSensorData);
       setConnectionError('');
       setLastUpdate(new Date());
-      
+
       // Guardar datos en AsyncStorage
       await saveDataReading(newSensorData);
-      
+
       // Verificar alerta de movimiento
       if (newSensorData.movement_alert && !sensorData.movement_alert) {
         await handleMovementAlert();
       }
-      
+
       return true;
     } catch (error: any) {
       console.error('Error fetching sensor data:', error);
@@ -161,10 +175,10 @@ export default function MonitorScreen() {
 
       const existingData = await AsyncStorage.getItem('sensorHistory');
       let history: DataReading[] = existingData ? JSON.parse(existingData) : [];
-      
+
       history.unshift(reading);
       history = history.slice(0, 10); // Mantener solo las últimas 10 lecturas
-      
+
       await AsyncStorage.setItem('sensorHistory', JSON.stringify(history));
     } catch (error) {
       console.error('Error saving data:', error);
@@ -209,20 +223,26 @@ export default function MonitorScreen() {
     } else {
       // Conectar
       if (!validateIP(ipAddress)) {
-        Alert.alert('IP Inválida', 'Por favor ingresa una dirección IP válida.');
+        Alert.alert(
+          'IP Inválida',
+          'Por favor ingresa una dirección IP válida.',
+        );
         return;
       }
 
       setIsConnecting(true);
       const success = await fetchSensorData();
-      
+
       if (success) {
         setIsConnected(true);
         intervalRef.current = setInterval(fetchSensorData, 5000);
       } else {
-        Alert.alert('Error de Conexión', 'No se pudo conectar al ESP32. Verifica la IP y que el dispositivo esté encendido.');
+        Alert.alert(
+          'Error de Conexión',
+          'No se pudo conectar al ESP32. Verifica la IP y que el dispositivo esté encendido.',
+        );
       }
-      
+
       setIsConnecting(false);
     }
   };
@@ -233,7 +253,9 @@ export default function MonitorScreen() {
 
     try {
       const historyData = await AsyncStorage.getItem('sensorHistory');
-      const readings: DataReading[] = historyData ? JSON.parse(historyData) : [];
+      const readings: DataReading[] = historyData
+        ? JSON.parse(historyData)
+        : [];
 
       if (readings.length === 0) {
         Alert.alert('Sin Datos', 'No hay datos para enviar.');
@@ -241,26 +263,32 @@ export default function MonitorScreen() {
         return;
       }
 
-      const response = await fetch('https://hook.us2.make.com/jz9d621l3omczycgisjqkrxl22vhch9g', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        'https://hook.us2.make.com/jz9d621l3omczycgisjqkrxl22vhch9g',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_id: `ESP32_${ipAddress.replace(/\./g, '_')}`,
+            readings: readings,
+            total_readings: readings.length,
+            timestamp: new Date().toISOString(),
+          }),
         },
-        body: JSON.stringify({
-          device_id: `ESP32_${ipAddress.replace(/\./g, '_')}`,
-          readings: readings,
-          total_readings: readings.length,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+      );
 
       const responseText = await response.text();
       setWebhookResponse(`Respuesta (${response.status}): ${responseText}`);
-      
+
       if (response.ok) {
         Alert.alert('Éxito', 'Datos enviados correctamente a la nube.');
       } else {
-        Alert.alert('Error', 'Error al enviar datos. Revisa la respuesta del servidor.');
+        Alert.alert(
+          'Error',
+          'Error al enviar datos. Revisa la respuesta del servidor.',
+        );
       }
     } catch (error: any) {
       console.error('Error sending data:', error);
@@ -272,7 +300,10 @@ export default function MonitorScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Monitor ESP32</Text>
         <Text style={styles.subtitle}>Control de Sensores en Tiempo Real</Text>
@@ -281,7 +312,7 @@ export default function MonitorScreen() {
       {/* Configuración de Conexión */}
       <View style={styles.connectionCard}>
         <Text style={styles.cardTitle}>Configuración de Conexión</Text>
-        
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Dirección IP del ESP32:</Text>
           <TextInput
@@ -297,7 +328,7 @@ export default function MonitorScreen() {
         <TouchableOpacity
           style={[
             styles.connectionButton,
-            isConnected ? styles.connectedButton : styles.disconnectedButton
+            isConnected ? styles.connectedButton : styles.disconnectedButton,
           ]}
           onPress={toggleConnection}
           disabled={isConnecting}
@@ -307,7 +338,11 @@ export default function MonitorScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                {isConnected ? <Wifi size={20} color="#FFFFFF" /> : <WifiOff size={20} color="#FFFFFF" />}
+                {isConnected ? (
+                  <Wifi size={20} color="#FFFFFF" />
+                ) : (
+                  <WifiOff size={20} color="#FFFFFF" />
+                )}
                 <Text style={styles.buttonText}>
                   {isConnected ? 'Desconectar' : 'Conectar'}
                 </Text>
@@ -336,7 +371,7 @@ export default function MonitorScreen() {
       {/* Datos de Sensores */}
       <View style={styles.sensorsContainer}>
         <Text style={styles.cardTitle}>Datos en Tiempo Real</Text>
-        
+
         <View style={styles.sensorsGrid}>
           {/* Temperatura */}
           <View style={styles.sensorCard}>
@@ -344,7 +379,9 @@ export default function MonitorScreen() {
               <Thermometer size={24} color="#DC2626" />
               <Text style={styles.sensorLabel}>Temperatura</Text>
             </View>
-            <Text style={styles.sensorValue}>{sensorData.temperature.toFixed(1)} °C</Text>
+            <Text style={styles.sensorValue}>
+              {sensorData.temperature.toFixed(1)} °C
+            </Text>
             <Text style={styles.sensorTime}>{sensorData.timestamp}</Text>
           </View>
 
@@ -354,29 +391,46 @@ export default function MonitorScreen() {
               <Droplets size={24} color="#2563EB" />
               <Text style={styles.sensorLabel}>Humedad</Text>
             </View>
-            <Text style={styles.sensorValue}>{sensorData.humidity.toFixed(1)} %</Text>
+            <Text style={styles.sensorValue}>
+              {sensorData.humidity.toFixed(1)} %
+            </Text>
             <Text style={styles.sensorTime}>{sensorData.timestamp}</Text>
           </View>
         </View>
 
         {/* Alerta de Movimiento */}
-        <View style={[
-          styles.alertCard,
-          sensorData.movement_alert ? styles.alertActive : styles.alertInactive
-        ]}>
+        <View
+          style={[
+            styles.alertCard,
+            sensorData.movement_alert
+              ? styles.alertActive
+              : styles.alertInactive,
+          ]}
+        >
           <View style={styles.alertHeader}>
-            <Activity size={24} color={sensorData.movement_alert ? "#FFFFFF" : "#6B7280"} />
-            <Text style={[
-              styles.alertLabel,
-              sensorData.movement_alert ? styles.alertLabelActive : styles.alertLabelInactive
-            ]}>
+            <Activity
+              size={24}
+              color={sensorData.movement_alert ? '#FFFFFF' : '#6B7280'}
+            />
+            <Text
+              style={[
+                styles.alertLabel,
+                sensorData.movement_alert
+                  ? styles.alertLabelActive
+                  : styles.alertLabelInactive,
+              ]}
+            >
               Sensor de Movimiento
             </Text>
           </View>
-          <Text style={[
-            styles.alertStatus,
-            sensorData.movement_alert ? styles.alertStatusActive : styles.alertStatusInactive
-          ]}>
+          <Text
+            style={[
+              styles.alertStatus,
+              sensorData.movement_alert
+                ? styles.alertStatusActive
+                : styles.alertStatusInactive,
+            ]}
+          >
             {sensorData.movement_alert ? '¡MOVIMIENTO DETECTADO!' : 'Estable'}
           </Text>
         </View>
@@ -385,7 +439,7 @@ export default function MonitorScreen() {
       {/* Envío a la Nube */}
       <View style={styles.cloudCard}>
         <Text style={styles.cardTitle}>Envío de Datos</Text>
-        
+
         <TouchableOpacity
           style={styles.sendButton}
           onPress={sendDataToCloud}
